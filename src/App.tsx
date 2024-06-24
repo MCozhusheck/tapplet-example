@@ -24,56 +24,33 @@ const params: TariUniverseProviderParameters = {
 
 const provider = new TariUniverseProvider(params);
 
-type AccountDataResponse = {
-  id: number | undefined;
-  result: Account | undefined;
-};
-
-type ResizeResponse = {
-  width: number;
-  height: number;
-};
-
 function App() {
-  const [accountData, setAccountData] = useState<Account | undefined>(undefined);
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
+
+  async function resize() {
+    console.log("resize")
+    const {width, height } = await provider.requestParentSize();
+    console.log("resize", width, height)
+    setWidth(width)
+    setHeight(height)
+  }
   useEffect(() => {
-
-    function getAccountData(event: MessageEvent<AccountDataResponse>) {
-      setAccountData(event.data.result);
-    }
-    function handleResize(event: MessageEvent<ResizeResponse>) {
-      setWidth(event.data.width)
-      setHeight(event.data.height)
-    }
-
-    function handleEvent(event: MessageEvent) {
-      if (event.data.type === "resize") {
-        handleResize(event)
-      } else {
-        getAccountData(event)
-      }
-    }
-    window.addEventListener(
-      "message",
-      (event) => handleEvent(event),
-      false
-    );
-    provider.requestParentSize();
-    
+    resize();
   }, []);
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" maxWidth={width} maxHeight={height}>
-      <AccountTest accountData={accountData} />
+      <AccountTest />
     </Box>
   );
 }
 
-function AccountTest({ accountData }: { accountData: unknown }) {
+function AccountTest() {
+  const [accountData, setAccountData] = useState<Account | undefined>(undefined);
   async function getAccountClick() {
-    await provider.getAccount();
+    const acc = await provider.getAccount();
+    setAccountData(acc);
   }
 
   return (
