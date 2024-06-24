@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import {
+  Account,
   TariPermissions,
   TariUniverseProvider,
   TariUniverseProviderParameters,
@@ -23,22 +24,50 @@ const params: TariUniverseProviderParameters = {
 
 const provider = new TariUniverseProvider(params);
 
+type AccountDataResponse = {
+  id: number | undefined;
+  result: Account | undefined;
+};
+
+type ResizeResponse = {
+  width: number;
+  height: number;
+};
+
 function App() {
-  const [accountData, setAccountData] = useState({});
+  const [accountData, setAccountData] = useState<Account | undefined>(undefined);
+  const [width, setWidth] = useState(0)
+  const [height, setHeight] = useState(0)
   useEffect(() => {
+
+    function getAccountData(event: MessageEvent<AccountDataResponse>) {
+      setAccountData(event.data.result);
+    }
+    function handleResize(event: MessageEvent<ResizeResponse>) {
+      setWidth(event.data.width)
+      setHeight(event.data.height)
+    }
+
+    function handleEvent(event: MessageEvent) {
+      if (event.data.type === "resize") {
+        handleResize(event)
+      } else {
+        getAccountData(event)
+      }
+    }
     window.addEventListener(
       "message",
-      (event) => {
-        console.log(event);
-        setAccountData(event.data);
-      },
+      (event) => handleEvent(event),
       false
     );
+    provider.requestParentSize();
+    
   }, []);
+
   return (
-    <>
+    <Box display="flex" justifyContent="center" alignItems="center" maxWidth={width} maxHeight={height}>
       <AccountTest accountData={accountData} />
-    </>
+    </Box>
   );
 }
 
