@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import {
   Account,
@@ -22,35 +22,21 @@ const params: TariUniverseProviderParameters = {
   optionalPermissions,
 };
 
-const provider = new TariUniverseProvider(params);
-
 function App() {
-  const [width, setWidth] = useState(0)
-  const [height, setHeight] = useState(0)
-
-  async function resize() {
-    console.log("resize")
-    const {width, height } = await provider.requestParentSize();
-    console.log("resize", width, height)
-    setWidth(width)
-    setHeight(height)
-  }
-  useEffect(() => {
-    resize();
-  }, []);
+  const provider = useRef<TariUniverseProvider>(new TariUniverseProvider(params));
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" maxWidth={width} maxHeight={height}>
-      <AccountTest />
+    <Box display="flex" justifyContent="center" alignItems="center" width="100%">
+      <AccountTest provider={provider.current}/>
     </Box>
   );
 }
 
-function AccountTest() {
+function AccountTest({provider}: {provider: TariUniverseProvider}) {
   const [accountData, setAccountData] = useState<Account | undefined>(undefined);
   async function getAccountClick() {
     const acc = await provider.getAccount();
-    setAccountData(acc);
+    setAccountData(acc)
   }
 
   return (
