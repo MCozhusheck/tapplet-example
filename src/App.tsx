@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { useRef, useState } from "react";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import {
+  Account,
   TariPermissions,
   TariUniverseProvider,
   TariUniverseProviderParameters,
@@ -21,30 +22,21 @@ const params: TariUniverseProviderParameters = {
   optionalPermissions,
 };
 
-const provider = new TariUniverseProvider(params);
-
 function App() {
-  const [accountData, setAccountData] = useState({});
-  useEffect(() => {
-    window.addEventListener(
-      "message",
-      (event) => {
-        console.log(event);
-        setAccountData(event.data);
-      },
-      false
-    );
-  }, []);
+  const provider = useRef<TariUniverseProvider>(new TariUniverseProvider(params));
+
   return (
-    <>
-      <AccountTest accountData={accountData} />
-    </>
+    <Box display="flex" justifyContent="center" alignItems="center" width="100%">
+      <AccountTest provider={provider.current}/>
+    </Box>
   );
 }
 
-function AccountTest({ accountData }: { accountData: unknown }) {
+function AccountTest({provider}: {provider: TariUniverseProvider}) {
+  const [accountData, setAccountData] = useState<Account | undefined>(undefined);
   async function getAccountClick() {
-    await provider.getAccount();
+    const acc = await provider.getAccount();
+    setAccountData(acc)
   }
 
   return (
